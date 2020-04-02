@@ -6,13 +6,23 @@ const Question = require('../models/question_model');
 //delete module
 module.exports.delete = async function(req, res){
     try{
-        let option = await Option.findByIdAndDelete(req.params.id);
-        let question = await Question.findByIdAndUpdate(option.questionID, {$pull: {options: req.params.id}});
-        return res.json(200, {
-            data: {
-                message: "Option deleted"
-            }
-        });
+        let option = await Option.findById(req.params.id);
+        if(option.votes == 0){
+            let option = await Option.findByIdAndDelete(req.params.id);
+            let question = await Question.findByIdAndUpdate(option.questionID, {$pull: {options: req.params.id}});
+            return res.json(200, {
+                data: {
+                    message: "Option deleted"
+                }
+            });
+        }
+        else{
+            return res.json(500, {
+                data:{
+                    message: "Can't delete"
+                }
+            });
+        }
     }
     catch(err){
         return res.json(400,{
