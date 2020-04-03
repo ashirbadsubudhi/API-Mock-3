@@ -37,13 +37,30 @@ module.exports.find = async function(req, res){
 //delete module
 module.exports.delete = async function(req, res){
     try{
-        let question = await Question.findByIdAndDelete(req.params.id);
-        let option = await Option.deleteMany({_id: question.options});
-        return res.json(200, {
-            data: {
-                message: "Question deleted"
+        let question = await Question.findById(req.params.id);
+        let option = await Option.find({_id: question.options});
+        let flag = false;
+        option.forEach(function(element) {
+            if(element.votes > 0){
+                flag = true;
             }
         });
+        if(flag){
+            return res.json(500, {
+                data:{
+                    message: "Can't delete"
+                }
+            });
+        }
+        else{
+            question = await Question.findByIdAndDelete(req.params.id);
+            option = await Option.deleteMany({_id: question.options});
+            return res.json(200, {
+                data: {
+                    message: "Question deleted"
+                }
+            });
+        }
     }
     catch(err){
         return res.json(400,{
